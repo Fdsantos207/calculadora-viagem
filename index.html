@@ -143,6 +143,14 @@
     <p class="subtitle">Cálculo automático de corrida</p>
 
     <div class="field">
+      <label>Tipo de corrida</label>
+      <select id="modo">
+        <option value="normal">Normal (R$ 1,50/km)</option>
+        <option value="faturado">Faturado (R$ 2,00/km)</option>
+      </select>
+    </div>
+
+    <div class="field">
       <label>Distância (km)</label>
       <input type="number" id="km" placeholder="Ex: 15" />
     </div>
@@ -175,40 +183,70 @@
       <strong>R$ 0,00</strong>
     </div>
 
+    <div class="result" id="historico" style="display:none">
+      <span>Última corrida</span>
+      <strong id="histText"></strong>
+    </div>
+
+    <div class="buttons" style="margin-top:16px">
+      <button class="btn-calc" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
     <footer>
-      Projeto pronto para GitHub Pages
+      Projeto pronto para GitHub Pages • Mobile First
     </footer>
   </div>
 
   <script>
+    let ultimoValor = 0;
+    let ultimoModo = '';
+
     function calcular() {
       const km = parseFloat(document.getElementById('km').value) || 0;
       const pontos = parseInt(document.getElementById('pontos').value) || 0;
       const espera = parseInt(document.getElementById('espera').value) || 0;
       const cancelamento = parseFloat(document.getElementById('cancelamento').value) || 0;
+      const modo = document.getElementById('modo').value;
+
+      const valorKm = modo === 'faturado' ? 2.0 : 1.5;
 
       let valorViagem;
       if (km <= 9.3) {
         valorViagem = 20;
       } else {
-        valorViagem = (km * 1.5) + (pontos * 3);
+        valorViagem = (km * valorKm) + (pontos * 3);
       }
 
       let tolerancia = pontos * 20;
       let valorEspera = espera > tolerancia ? (espera - tolerancia) * 0.4 : 0;
 
       let total = valorViagem + valorEspera + cancelamento;
+      ultimoValor = total;
+      ultimoModo = modo;
 
-      document.getElementById('resultado').querySelector('strong').innerText =
-        total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const totalFormatado = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('resultado').querySelector('strong').innerText = totalFormatado;
+
+      document.getElementById('historico').style.display = 'block';
+      document.getElementById('histText').innerText = `${totalFormatado} • ${modo.toUpperCase()}`;
     }
 
     function limpar() {
-      document.getElementById('km').value = '';
-      document.getElementById('pontos').value = '';
-      document.getElementById('espera').value = '';
+      ['km','pontos','espera'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cancelamento').value = '0';
       document.getElementById('resultado').querySelector('strong').innerText = 'R$ 0,00';
+      document.getElementById('historico').style.display = 'none';
+    }
+
+    function compartilhar() {
+      if (!ultimoValor) {
+        alert('Calcule a viagem antes de compartilhar');
+        return;
+      }
+
+      const texto = `🚗 Valor da corrida\n💰 Total: R$ ${ultimoValor.toFixed(2)}\n📦 Tipo: ${ultimoModo.toUpperCase()}`;
+      const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
     }
   </script>
 
