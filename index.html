@@ -56,6 +56,9 @@ function showSection(id){
   <button onclick="showSection('calc')">📍 Calcular</button>
   <button onclick="showSection('hist')">📜 Histórico</button>
   <button onclick="showSection('cfg')">⚙️ Configurações</button>
+  <hr style="opacity:.2">
+  <button onclick="bloquearApp()">🔒 Bloquear app</button>
+  <button onclick="atualizarApp()">🔄 Atualizar</button>
   <button onclick="toggleMenu()">❌ Fechar</button>
 </nav>
 
@@ -172,7 +175,9 @@ function salvarCfg(){
   const novoPin = document.getElementById('cfgPin').value;
   if(novoPin){ cfg.pin = novoPin; }
   localStorage.setItem('cfg', JSON.stringify(cfg));
-  alert('Configurações salvas');
+  alert('Configurações salvas e aplicadas');
+  // aplica imediatamente sem sair do app
+  showSection('calc');
 }
 
 // ====== PDF REAL ======
@@ -199,6 +204,17 @@ function enviarWhats(){
 }
 
 renderHist();
+
+// ===== CONTROLES EXTRAS =====
+function bloquearApp(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  toggleMenu();
+}
+
+function atualizarApp(){
+  location.reload();
+}
 </script>
 </body>
 </html>
