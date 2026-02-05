@@ -80,49 +80,109 @@
 </main>
 
 <script>
-const PIN_PADRAO='1234';
-let cfg = JSON.parse(localStorage.getItem('cfg')) || {km:1.5,ponto:3,espera:0.4,pin:PIN_PADRAO};
+// ====== CONFIGURAÇÃO INICIAL ======
+const PIN_PADRAO = '1234';
+let cfg = JSON.parse(localStorage.getItem('cfg'));
+if(!cfg){
+  cfg = { km:1.5, ponto:3, espera:0.4, pin: PIN_PADRAO };
+  localStorage.setItem('cfg', JSON.stringify(cfg));
+}
 let hist = JSON.parse(localStorage.getItem('hist')) || [];
 
+// ====== LOGIN ======
 function login(){
-  const p=document.getElementById('pin').value;
-  if(p===cfg.pin){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';}
-  else alert('PIN incorreto');
+  const p = document.getElementById('pin').value;
+  if(p === cfg.pin){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+  } else {
+    alert('PIN incorreto');
+  }
 }
 
+// ====== CÁLCULO ======
 function calcular(){
- const km=+km.value||0,p=+pontos.value,e=+espera.value||0,c=+cancel.value;
- let total=km<=9.3?20:(km*cfg.km+p*cfg.ponto);
- total+=e*cfg.espera+c;
- totalEl.innerText='R$ '+total.toFixed(2);
- detalhe.innerText=`${km}km • ${p} ponto(s)`;
- hist.unshift({data:new Date().toLocaleString(),total,km,p});
- localStorage.setItem('hist',JSON.stringify(hist));
- renderHist();
+  const kmVal = parseFloat(document.getElementById('km').value) || 0;
+  const pontosVal = parseInt(document.getElementById('pontos').value) || 1;
+  const esperaVal = parseFloat(document.getElementById('espera').value) || 0;
+  const cancelVal = parseFloat(document.getElementById('cancel').value) || 0;
+
+  let total = 0;
+  let detalhes = [];
+
+  if(kmVal <= 9.3){
+    total = 20;
+    detalhes.push('Valor mínimo aplicado (R$ 20,00)');
+  } else {
+    const vKm = kmVal * cfg.km;
+    const vP = pontosVal * cfg.ponto;
+    total = vKm + vP;
+    detalhes.push(`${kmVal} km × R$ ${cfg.km.toFixed(2)} = R$ ${vKm.toFixed(2)}`);
+    detalhes.push(`${pontosVal} ponto(s) × R$ ${cfg.ponto.toFixed(2)} = R$ ${vP.toFixed(2)}`);
+  }
+
+  if(esperaVal > 0){
+    const vE = esperaVal * cfg.espera;
+    total += vE;
+    detalhes.push(`Espera: R$ ${vE.toFixed(2)}`);
+  }
+
+  if(cancelVal > 0){
+    total += cancelVal;
+    detalhes.push('Cancelamento: R$ 15,00');
+  }
+
+  document.getElementById('total').innerText = `R$ ${total.toFixed(2)}`;
+  document.getElementById('detalhe').innerText = detalhes.join(' • ');
+
+  hist.unshift({data:new Date().toLocaleString(), total});
+  localStorage.setItem('hist', JSON.stringify(hist));
+  renderHist();
 }
 
+// ====== HISTÓRICO ======
 function renderHist(){
- historico.innerHTML='';
- hist.slice(0,5).forEach(h=>historico.innerHTML+=`<li>${h.data} — R$ ${h.total.toFixed(2)}</li>`);
+  const ul = document.getElementById('historico');
+  ul.innerHTML = '';
+  hist.slice(0,5).forEach(h => {
+    ul.innerHTML += `<li>${h.data} — R$ ${h.total.toFixed(2)}</li>`;
+  });
 }
 
+// ====== CONFIGURAÇÕES ======
 function salvarCfg(){
- cfg={km:+cfgKm.value,ponto:+cfgPonto.value,espera:+cfgEspera.value,pin:cfgPin.value||cfg.pin};
- localStorage.setItem('cfg',JSON.stringify(cfg)); alert('Configurações salvas');
+  cfg.km = parseFloat(document.getElementById('cfgKm').value);
+  cfg.ponto = parseFloat(document.getElementById('cfgPonto').value);
+  cfg.espera = parseFloat(document.getElementById('cfgEspera').value);
+  const novoPin = document.getElementById('cfgPin').value;
+  if(novoPin){ cfg.pin = novoPin; }
+  localStorage.setItem('cfg', JSON.stringify(cfg));
+  alert('Configurações salvas');
 }
 
+// ====== PDF REAL ======
 function gerarPDF(){
- const {jsPDF}=window.jspdf; const pdf=new jsPDF();
- pdf.setFontSize(16); pdf.text('Itaim Connect Motoboy',20,20);
- pdf.setFontSize(12);
- pdf.text(`Data: ${new Date().toLocaleString()}`,20,30);
- pdf.text(`Distância: ${km.value} km`,20,40);
- pdf.text(`Pontos: ${pontos.value}`,20,50);
- pdf.text(`TOTAL: ${totalEl.innerText}`,20,65);
- pdf.save('recibo_itain_connect.pdf');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  pdf.setFontSize(18);
+  pdf.text('Itaim Connect Motoboy', 20, 20);
+
+  pdf.setFontSize(11);
+  pdf.text(`Data: ${new Date().toLocaleString()}`, 20, 30);
+  pdf.text(`Distância: ${document.getElementById('km').value} km`, 20, 40);
+  pdf.text(`Pontos: ${document.getElementById('pontos').value}`, 20, 50);
+  pdf.text(`Total: ${document.getElementById('total').innerText}`, 20, 65);
+
+  pdf.save(`recibo_${Date.now()}.pdf`);
 }
 
-function enviarWhats(){window.open(`https://wa.me/?text=Valor%20${totalEl.innerText}`)}
+// ====== WHATSAPP ======
+function enviarWhats(){
+  const valor = document.getElementById('total').innerText;
+  window.open(`https://wa.me/?text=Valor%20da%20viagem:%20${valor}`);
+}
+
 renderHist();
 </script>
 </body>
