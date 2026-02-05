@@ -23,6 +23,18 @@
     li{font-size:.85rem;margin-bottom:4px}
     #login{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:99}
   </style>
+<script>
+// ===== MENU HAMBURGUER =====
+function toggleMenu(){
+  const menu = document.getElementById('menu');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+function showSection(id){
+  document.querySelectorAll('#app section').forEach(sec=>sec.style.display='none');
+  document.getElementById(id).style.display='block';
+  toggleMenu();
+}
+</script>
 </head>
 <body>
 
