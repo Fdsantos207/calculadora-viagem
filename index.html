@@ -181,52 +181,8 @@ function salvarCfg(){
 }
 
 // ====== PDF REAL ======
-// ====== PDF REAL DETALHADO ======
-function gerarPDF(compartilhar=false){
+function gerarPDF(){
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
-
-  // LOGO
-  pdf.addImage('logo.png','PNG',10,8,25,25);
-
-  pdf.setFontSize(16);
-  pdf.text('Calculadora Motoboy',40,20);
-
-  pdf.setFontSize(11);
-  const yBase = 45;
-  const km = document.getElementById('km').value;
-  const pontos = document.getElementById('pontos').value;
-  const espera = document.getElementById('espera').value || 0;
-  const total = document.getElementById('total').innerText;
-  const detalhe = document.getElementById('detalhe').innerText;
-
-  pdf.text(`Data/Hora: ${new Date().toLocaleString()}`,10,yBase);
-  pdf.text(`Distância: ${km} km`,10,yBase+10);
-  pdf.text(`Pontos: ${pontos}`,10,yBase+20);
-  pdf.text(`Espera: ${espera} min`,10,yBase+30);
-
-  pdf.text('Detalhamento:',10,yBase+45);
-  pdf.text(detalhe,10,yBase+55,{maxWidth:180});
-
-  pdf.setFontSize(14);
-  pdf.text(`TOTAL: ${total}`,10,yBase+85);
-
-  pdf.setFontSize(9);
-  pdf.text('Documento gerado pelo app Calculadora Motoboy',10,285);
-
-  if(compartilhar && navigator.share){
-    const blob = pdf.output('blob');
-    const file = new File([blob],'calculadora_motoboy.pdf',{type:'application/pdf'});
-    navigator.share({
-      files:[file],
-      title:'Orçamento - Calculadora Motoboy',
-      text:`Orçamento de viagem
-${total}`
-    });
-  } else {
-    pdf.save('calculadora_motoboy.pdf');
-  }
-} = window.jspdf;
   const pdf = new jsPDF();
 
   pdf.setFontSize(18);
@@ -242,17 +198,9 @@ ${total}`
 }
 
 // ====== WHATSAPP ======
-// ====== WHATSAPP + PDF ======
 function enviarWhats(){
-  // tenta compartilhar o PDF direto (funciona em APK / Android moderno)
-  gerarPDF(true);
-
-  // fallback: mensagem no WhatsApp
   const valor = document.getElementById('total').innerText;
-  const msg = encodeURIComponent(`Orçamento de viagem
-Valor total: ${valor}`);
-  window.open(`https://wa.me/?text=${msg}`);
-}`);
+  window.open(`https://wa.me/?text=Valor%20da%20viagem:%20${valor}`);
 }
 
 renderHist();
