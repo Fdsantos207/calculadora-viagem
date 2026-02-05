@@ -3,230 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora de Viagem</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2f80ed">
-
+  <title>Itaim Connect Motoboy • Sistema Completo</title>
+  <link rel="icon" href="logo.png" />
   <style>
-    :root {
-      --primary: #2f80ed;
-      --secondary: #56ccf2;
-      --bg: #f5f7fb;
-      --dark: #333;
-      --radius: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      width: 100%;
-      max-width: 420px;
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    }
-
-    h1 {
-      text-align: center;
-      color: var(--primary);
-      margin-bottom: 8px;
-    }
-
-    p.subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--dark);
-      font-weight: 600;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #ddd;
-      font-size: 16px;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    button {
-      flex: 1;
-      padding: 14px;
-      border-radius: 14px;
-      border: none;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .btn-calc { background: var(--primary); color: #fff; }
-    .btn-clear { background: #eee; }
-    .btn-pdf { background: #27ae60; color:#fff; }
-
-    .result {
-      margin-top: 20px;
-      padding: 16px;
-      background: var(--bg);
-      border-radius: var(--radius);
-      text-align: center;
-    }
+    :root{--bg:#0f0f10;--card:#16171a;--accent:#00e0a4;--muted:#9aa0a6;--txt:#ffffff}
+    body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,Arial}
+    header{display:flex;align-items:center;gap:12px;padding:14px;background:#0b0b0c;position:sticky;top:0}
+    header img{height:40px;border-radius:6px}
+    main{max-width:560px;margin:auto;padding:16px}
+    .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:14px}
+    label{font-size:.8rem;color:var(--muted)}
+    input,select,button{width:100%;padding:12px;border-radius:10px;border:none;margin-top:6px;background:#0f1013;color:#fff}
+    button{cursor:pointer}
+    .primary{background:var(--accent);color:#003d2c;font-weight:700}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .total{font-size:1.6rem;font-weight:800;text-align:center}
+    ul{padding-left:16px}
+    li{font-size:.85rem;margin-bottom:4px}
   </style>
 </head>
 <body>
+<header>
+  <img src="logo.png" />
+  <strong>Itaim Connect Motoboy</strong>
+</header>
 
-  <div class="card">
-    <h1>🚗 Calculadora de Viagem</h1>
-    <p class="subtitle">Cálculo automático de corrida</p>
+<main>
 
-    <div class="field">
-      <label>Tipo de corrida</label>
-      <select id="modo">
-        <option value="normal">Normal (R$ 1,50/km)</option>
-        <option value="faturado">Faturado (R$ 2,00/km)</option>
-      </select>
-    </div>
+<section class="card">
+  <h3>📍 Cálculo da viagem</h3>
+  <label>Distância (km)</label>
+  <input id="km" type="number" step="0.1" />
+  <label>Pontos</label>
+  <select id="pontos"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+  <label>Espera (min)</label>
+  <input id="espera" type="number" />
+  <label>Cancelamento</label>
+  <select id="cancel"><option value="0">Não</option><option value="15">Sim</option></select>
+  <button class="primary" onclick="calcular()">Calcular</button>
+</section>
 
-    <div class="field">
-      <label>Distância (km)</label>
-      <input type="number" id="km" placeholder="Ex: 15" />
-    </div>
-
-    <div class="field">
-      <label>Pontos</label>
-      <input type="number" id="pontos" placeholder="Ex: 2" />
-    </div>
-
-    <div class="field">
-      <label>Minutos de espera</label>
-      <input type="number" id="espera" placeholder="Ex: 30" />
-    </div>
-
-    <div class="field">
-      <label>Cancelamento</label>
-      <select id="cancelamento">
-        <option value="0">Não</option>
-        <option value="15">Sim (+ R$ 15)</option>
-      </select>
-    </div>
-
-    <div class="buttons">
-      <button class="btn-calc" onclick="calcular()">Calcular</button>
-      <button class="btn-clear" onclick="limpar()">Limpar</button>
-    </div>
-
-    <div class="buttons">
-      <button class="btn-pdf" onclick="gerarPDF()">📄 Recibo PDF</button>
-      <button class="btn-calc" onclick="compartilhar()">📲 Compartilhar</button>
-    </div>
-
-    <div class="result" id="resultado">
-      <span>Valor final</span>
-      <strong>R$ 0,00</strong>
-    </div>
-
-    <div class="result" id="historico" style="display:none">
-      <span>Última corrida</span>
-      <strong id="histText"></strong>
-    </div>
-
-    <div class="buttons" style="margin-top:16px">
-      <button class="btn-calc" onclick="compartilhar()">📲 Compartilhar</button>
-    </div>
-
-    <footer>
-      Projeto pronto para GitHub Pages • Mobile First
-    </footer>
+<section class="card">
+  <div class="total" id="total">R$ 0,00</div>
+  <p id="detalhe"></p>
+  <div class="row">
+    <button onclick="gerarPDF()">📄 Recibo PDF</button>
+    <button onclick="enviarWhats()">📲 WhatsApp</button>
   </div>
+</section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script>
-    let ultimoValor = 0;
-    let ultimoModo = '';
+<section class="card">
+  <h3>📜 Histórico</h3>
+  <ul id="historico"></ul>
+</section>
 
-    function calcular() {
-      const km = parseFloat(document.getElementById('km').value) || 0;
-      const pontos = parseInt(document.getElementById('pontos').value) || 0;
-      const espera = parseInt(document.getElementById('espera').value) || 0;
-      const cancelamento = parseFloat(document.getElementById('cancelamento').value) || 0;
-      const modo = document.getElementById('modo').value;
+<section class="card">
+  <h3>⚙️ Configurações</h3>
+  <label>Valor KM</label><input id="cfgKm" type="number" value="1.5" />
+  <label>Valor ponto</label><input id="cfgPonto" type="number" value="3" />
+  <label>Valor espera/min</label><input id="cfgEspera" type="number" value="0.4" />
+  <button onclick="salvarCfg()">Salvar</button>
+</section>
 
-      const valorKm = modo === 'faturado' ? 2.0 : 1.5;
-      let valorViagem = km <= 9.3 ? 20 : (km * valorKm) + (pontos * 3);
+</main>
 
-      let tolerancia = pontos * 20;
-      let valorEspera = espera > tolerancia ? (espera - tolerancia) * 0.4 : 0;
+<script>
+let cfg = JSON.parse(localStorage.getItem('cfg')) || {km:1.5,ponto:3,espera:0.4};
+let hist = JSON.parse(localStorage.getItem('hist')) || [];
 
-      let total = valorViagem + valorEspera + cancelamento;
-      ultimoValor = total;
-      ultimoModo = modo;
-
-      document.querySelector('#resultado strong').innerText =
-        total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-
-    function gerarPDF() {
-      if (!ultimoValor) return alert('Calcule antes de gerar o recibo');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF();
-
-      pdf.setFontSize(16);
-      pdf.text('Recibo de Corrida', 20, 20);
-      pdf.setFontSize(12);
-      pdf.text(`Valor: R$ ${ultimoValor.toFixed(2)}`, 20, 40);
-      pdf.text(`Tipo: ${ultimoModo.toUpperCase()}`, 20, 50);
-      pdf.text(`Data: ${new Date().toLocaleString()}`, 20, 60);
-
-      pdf.save('recibo-corrida.pdf');
-    }
-
-    function compartilhar() {
-      if (!ultimoValor) return alert('Calcule antes de compartilhar');
-      const texto = `🚗 Corrida\n💰 Valor: R$ ${ultimoValor.toFixed(2)}\n📦 Tipo: ${ultimoModo.toUpperCase()}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
-    }
-
-    function limpar() {
-      document.querySelectorAll('input').forEach(i => i.value = '');
-      document.getElementById('cancelamento').value = '0';
-      document.querySelector('#resultado strong').innerText = 'R$ 0,00';
-      ultimoValor = 0;
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
-  </script>
-
+function calcular(){
+ const km = +document.getElementById('km').value||0;
+ const p = +document.getElementById('pontos').value;
+ const e = +document.getElementById('espera').value||0;
+ const c = +document.getElementById('cancel').value;
+ let total = km<=9.3?20:(km*cfg.km+p*cfg.ponto);
+ total += e*cfg.espera + c;
+ document.getElementById('total').innerText='R$ '+total.toFixed(2);
+ document.getElementById('detalhe').innerText=`${km}km • ${p} ponto(s)`;
+ hist.unshift({data:new Date().toLocaleString(),total});
+ localStorage.setItem('hist',JSON.stringify(hist));
+ renderHist();
+}
+function renderHist(){
+ const ul=document.getElementById('historico'); ul.innerHTML='';
+ hist.slice(0,5).forEach(h=>{ul.innerHTML+=`<li>${h.data} — R$ ${h.total.toFixed(2)}</li>`});
+}
+function salvarCfg(){
+ cfg={km:+cfgKm.value,ponto:+cfgPonto.value,espera:+cfgEspera.value};
+ localStorage.setItem('cfg',JSON.stringify(cfg)); alert('Configurações salvas');
+}
+function gerarPDF(){alert('PDF gerado com logo (simulação).')}
+function enviarWhats(){window.open(`https://wa.me/?text=Valor%20${document.getElementById('total').innerText}`)}
+renderHist();
+</script>
 </body>
 </html>
