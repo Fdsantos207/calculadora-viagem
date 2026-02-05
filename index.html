@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de Viagem</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2f80ed">
+
   <style>
     :root {
       --primary: #2f80ed;
@@ -46,12 +51,12 @@
     p.subtitle {
       text-align: center;
       color: #666;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
       font-size: 14px;
     }
 
     .field {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     label {
@@ -69,15 +74,10 @@
       font-size: 16px;
     }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
     .buttons {
       display: flex;
-      gap: 12px;
-      margin-top: 20px;
+      gap: 10px;
+      margin-top: 16px;
     }
 
     button {
@@ -85,54 +85,21 @@
       padding: 14px;
       border-radius: 14px;
       border: none;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s ease;
     }
 
-    .btn-calc {
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn-calc:hover {
-      background: #1f6ad6;
-    }
-
-    .btn-clear {
-      background: #eee;
-      color: #555;
-    }
-
-    .btn-clear:hover {
-      background: #ddd;
-    }
+    .btn-calc { background: var(--primary); color: #fff; }
+    .btn-clear { background: #eee; }
+    .btn-pdf { background: #27ae60; color:#fff; }
 
     .result {
-      margin-top: 24px;
-      padding: 18px;
+      margin-top: 20px;
+      padding: 16px;
       background: var(--bg);
       border-radius: var(--radius);
       text-align: center;
-    }
-
-    .result span {
-      display: block;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .result strong {
-      font-size: 28px;
-      color: var(--primary);
-    }
-
-    footer {
-      margin-top: 18px;
-      text-align: center;
-      font-size: 12px;
-      color: #999;
     }
   </style>
 </head>
@@ -178,6 +145,11 @@
       <button class="btn-clear" onclick="limpar()">Limpar</button>
     </div>
 
+    <div class="buttons">
+      <button class="btn-pdf" onclick="gerarPDF()">📄 Recibo PDF</button>
+      <button class="btn-calc" onclick="compartilhar()">📲 Compartilhar</button>
+    </div>
+
     <div class="result" id="resultado">
       <span>Valor final</span>
       <strong>R$ 0,00</strong>
@@ -197,6 +169,7 @@
     </footer>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     let ultimoValor = 0;
     let ultimoModo = '';
@@ -209,13 +182,7 @@
       const modo = document.getElementById('modo').value;
 
       const valorKm = modo === 'faturado' ? 2.0 : 1.5;
-
-      let valorViagem;
-      if (km <= 9.3) {
-        valorViagem = 20;
-      } else {
-        valorViagem = (km * valorKm) + (pontos * 3);
-      }
+      let valorViagem = km <= 9.3 ? 20 : (km * valorKm) + (pontos * 3);
 
       let tolerancia = pontos * 20;
       let valorEspera = espera > tolerancia ? (espera - tolerancia) * 0.4 : 0;
@@ -224,29 +191,40 @@
       ultimoValor = total;
       ultimoModo = modo;
 
-      const totalFormatado = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('resultado').querySelector('strong').innerText = totalFormatado;
-
-      document.getElementById('historico').style.display = 'block';
-      document.getElementById('histText').innerText = `${totalFormatado} • ${modo.toUpperCase()}`;
+      document.querySelector('#resultado strong').innerText =
+        total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    function limpar() {
-      ['km','pontos','espera'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('cancelamento').value = '0';
-      document.getElementById('resultado').querySelector('strong').innerText = 'R$ 0,00';
-      document.getElementById('historico').style.display = 'none';
+    function gerarPDF() {
+      if (!ultimoValor) return alert('Calcule antes de gerar o recibo');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+
+      pdf.setFontSize(16);
+      pdf.text('Recibo de Corrida', 20, 20);
+      pdf.setFontSize(12);
+      pdf.text(`Valor: R$ ${ultimoValor.toFixed(2)}`, 20, 40);
+      pdf.text(`Tipo: ${ultimoModo.toUpperCase()}`, 20, 50);
+      pdf.text(`Data: ${new Date().toLocaleString()}`, 20, 60);
+
+      pdf.save('recibo-corrida.pdf');
     }
 
     function compartilhar() {
-      if (!ultimoValor) {
-        alert('Calcule a viagem antes de compartilhar');
-        return;
-      }
+      if (!ultimoValor) return alert('Calcule antes de compartilhar');
+      const texto = `🚗 Corrida\n💰 Valor: R$ ${ultimoValor.toFixed(2)}\n📦 Tipo: ${ultimoModo.toUpperCase()}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+    }
 
-      const texto = `🚗 Valor da corrida\n💰 Total: R$ ${ultimoValor.toFixed(2)}\n📦 Tipo: ${ultimoModo.toUpperCase()}`;
-      const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
+    function limpar() {
+      document.querySelectorAll('input').forEach(i => i.value = '');
+      document.getElementById('cancelamento').value = '0';
+      document.querySelector('#resultado strong').innerText = 'R$ 0,00';
+      ultimoValor = 0;
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
     }
   </script>
 
